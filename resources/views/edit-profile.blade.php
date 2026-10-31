@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LesVol - Edit Profile</title>
+    <link rel="stylesheet" href="{{ asset('css/main.css') }}">
+</head>
+<body>
+
+<nav class="{{ request()->is('home') ? 'transparent-nav' : 'solid-nav' }}">
+    <a class="nav-brand" href="/home">
+        <img src="{{ asset('images/Logo_LesVol.png') }}" alt="LesVol Logo" class="brand-logo">
+    </a>
+    <div class="nav-links">
+      <a href="/home" class="{{ request()->is('home') ? 'active' : '' }}">Home</a>      
+      <a href="/my-activities" class="{{ request()->is(
+          'my-activities', 
+          'activity*', 
+          'upload-activity', 
+          'done-activity', 
+          'banned-activities', 
+          'proposed-activities', 
+          'register-activity/*', 
+          'see-details*', 
+          'options/*', 
+          'participants'
+      ) ? 'active' : '' }}">My Activities</a>
+
+      <div class="dropdown-wrapper">
+        <div class="nav-avatar" onclick="toggleDropdown('nav-dropdown')" id="avatar-trigger">
+          @if(session('user')?->profile_picture_path)
+            <img src="{{ asset('storage/' . session('user')->profile_picture_path) }}"
+                 alt="Profile"
+                 style="width:38px; height:38px; border-radius:50%; object-fit:cover; display:block;">
+          @else
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <defs>
+                  <linearGradient id="myRedGradient" x1="92%" y1="76%" x2="8%" y2="24%">
+                      <stop offset="0%" stop-color="var(--red)" />
+                      <stop offset="100%" stop-color="var(--red-light)" />
+                  </linearGradient>
+              </defs>
+              <circle cx="12" cy="8" r="4" fill="url(#myRedGradient)" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="url(#myRedGradient)" />
+            </svg>
+          @endif
+        </div>
+
+        <div class="dropdown-menu" id="nav-dropdown"
+          style="right: 0; left: auto; background: var(--white); min-width: 180px; padding: 3px 0; margin-top: 12px">
+
+          <div id="state-logged-in">
+            <a href="/profile" class="dropdown-item {{ request()->is('profile*', '*portfolio*', 'edit-profile') ? 'active' : '' }}"
+              style="font-weight: 700; text-align: center; padding: 15px 20px; border-bottom: 1px solid rgba(139, 26, 26, 0.15)">
+              View Profile
+            </a>
+
+            @if (!$isSeeker)
+            <a href="/be-a-seeker" class="dropdown-item {{ request()->is('be-a-seeker') ? 'active' : '' }}"
+              style="font-weight: 700; text-align: center; padding: 15px 20px; border-bottom: 1px solid rgba(139, 26, 26, 0.15)">
+              Be a Seeker!
+            </a>
+            @endif
+
+            <a href="/login" class="dropdown-item"
+              style="font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px 20px; border-bottom: 1px solid rgba(139, 26, 26, 0.15)">
+              Log Out
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#dropdownGradient)" stroke-width="2">
+                <defs>
+                  <linearGradient id="dropdownGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="var(--red)" />
+                    <stop offset="100%" stop-color="var(--red-light)" />
+                  </linearGradient>
+                </defs>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+              </svg>
+            </a>
+
+            <form action="{{ route('user.delete', session('user')?->id ?? 0) }}" method="POST" style="display: block; margin: 0;">
+              @csrf
+              @method('DELETE')
+              <a href="#" onclick="event.preventDefault(); if(confirm('Are you sure you want to delete your account? This action cannot be undone.')) { this.closest('form').submit(); }" class="dropdown-item" style="font-weight: 700; text-align: center; padding: 15px 20px; display: block;">
+                Delete Account
+              </a>
+            </form>
+            @if(session('error'))
+            <div id="error-toast" style="position: fixed; top: 20px; right: 20px; background: rgba(254, 226, 226, 0.95); border: 1.5px solid #fca5a5; color: #991b1b; padding: 16px 24px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; gap: 14px; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 600; font-size: 14px; min-width: 320px; max-width: 450px; animation: slideInToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+              <div style="background: #ef4444; color: #ffffff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.4);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <div style="flex-grow: 1; line-height: 1.4;">
+                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #ef4444; margin-bottom: 2px; font-weight: 800;">Deletion Blocked</div>
+                <div>{{ session('error') }}</div>
+              </div>
+              <button onclick="document.getElementById('error-toast').remove()" style="background: none; border: none; color: #991b1b; cursor: pointer; font-size: 22px; font-weight: 500; margin-left: 8px; padding: 0 4px; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; opacity: 0.7;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">&times;</button>
+            </div>
+            <style>
+            @keyframes slideInToast {
+              from { transform: translateY(-20px) scale(0.95); opacity: 0; }
+              to { transform: translateY(0) scale(1); opacity: 1; }
+            }
+            </style>
+            @endif
+          </div>
+
+          <div id="state-logged-out" style="display: none;">
+            <a href="/login" class="dropdown-item"
+              style="font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px 20px;">
+              Log In
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#dropdownGradient)" stroke-width="2">
+                <defs>
+                  <linearGradient id="dropdownGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="var(--red)" />
+                    <stop offset="100%" stop-color="var(--red-light)" />
+                  </linearGradient>
+                </defs>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+              </svg>
+            </a>
+            <a href="/register" class="dropdown-item"
+              style="font-weight: 700; text-align: center; padding: 15px 20px;">Sign Up</a>
+          </div>
+        </div>
+      </div>
+    </div>
+</nav>
+
+    <main class="main-content">
+        <div style="margin-bottom: 24px; margin-left: 65px">
+            <a href="/profile" class="back-btn">
+                <span class="back-icon">◀</span>
+                Back
+            </a>
+        </div>
+
+        <div class="card" style="padding: 48px; max-width: 900px; margin: 0 auto;">
+            <h2 class="auth-title" style="margin-bottom: 40px;">Edit Profile</h2>
+
+            <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PATCH')
+
+                @if ($errors->any())
+                    <div style="color: red; margin-bottom: 16px; padding: 12px; border: 1px solid red; border-radius: 8px;">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="profile-edit-grid">
+                    <div class="photo-upload-section">
+                        <div class="photo-placeholder" id="preview-container">
+                            <img id="image-preview" src="{{ $user->profile_picture_path ? asset('storage/' . $user->profile_picture_path) : '' }}" style="{{ $user->profile_picture_path ? '' : 'display: none;' }} width: 100%; height: 100%; object-fit: cover;">
+                            <svg id="placeholder-icon" width="100" height="100" viewBox="0 0 24 24" fill="#9ca3af" style="{{ $user->profile_picture_path ? 'display: none;' : '' }}">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                        <input type="file" name="profile_picture" id="image-input" accept="image/jpeg,image/png" style="display: none;">
+                        <button type="button" id="select-image-btn" class="btn btn-dark" style="padding: 10px 30px;">Select Image</button>
+                        <p class="upload-info">File size: max 1 MB<br>Extension: .JPEG, .PNG</p>
+                    </div>
+
+                    <div>
+                        <div class="form-group">
+                            <label>Volunteer Type</label>
+                            <input type="text" name="volunteer_type" class="form-input" placeholder="Type" value="{{ old('volunteer_type', $user->volunteer_type) }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" name="name" class="form-input" placeholder="Name" value="{{ old('name', $user->name) }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" name="phone" class="form-input" placeholder="Phone Number" value="{{ old('phone', $user->phone) }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" name="email" class="form-input" placeholder="Email Address" value="{{ old('email', $user->email) }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row-3" style="margin-top: 20px;">
+                    <div class="form-group">
+                        <label>Date of Birth</label>
+                        <input type="date" name="date_of_birth" class="form-input" value="{{ old('date_of_birth', $user->date_of_birth) }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Occupation</label>
+                        <input type="text" name="occupation" class="form-input" placeholder="Occupation" value="{{ old('occupation', $user->occupation) }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Domicile</label>
+                        <input type="text" name="domicile" class="form-input" placeholder="Domicile" value="{{ old('domicile', $user->domicile) }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea name="bio" class="form-input" placeholder="Bio">{{ old('bio', $user->bio) }}</textarea>
+                </div>
+
+                <div class="form-row-3" style="margin-top: 20px;">
+                    <div class="form-group">
+                        <label>New Password <span style="font-weight: 400; font-size: 0.85em;">(leave blank to keep current)</span></label>
+                        <input type="password" name="password" class="form-input" placeholder="New Password">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <input type="password" name="password_confirmation" class="form-input" placeholder="Confirm New Password">
+                    </div>
+                </div>
+
+                <div class="save-container">
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 400px;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+  <footer>
+  <div class="footer-grid">
+    <div class="footer-column-left">
+      <img src="{{ asset('images/Logo_LesVol.png') }}" alt="LesVol Logo" class="footer-logo">
+    </div>
+
+    <div class="footer-column-middle">
+      <div class="footer-text-block">
+        <h4>About Us</h4>
+        <p>LesVol is a volunteer discovery platform that connects passionate individuals with meaningful social activities and community programs.</p>
+      </div>
+      
+      <div class="footer-text-block">
+        <h4>Our Mission</h4>
+        <p>Our mission is to make volunteering easier, more accessible, and more impactful by helping users find activities that match their interests, availability, and location.</p>
+      </div>
+    </div>
+
+    <div class="footer-column-right">
+      <h4>Contact Us</h4>
+      <div class="footer-contact">
+        <span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l2.27-2.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          +6212 6767 6767
+        </span>
+        <span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          cs@lesvol.co.id
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="footer-divider">
+
+  <div class="footer-bottom">
+    <div class="footer-copyright">
+      &copy; {{ date('Y') }} LesVol. All rights reserved.
+    </div>
+    
+    <div class="footer-socials">
+      <a href="https://instagram.com" target="_blank" class="social-icon" aria-label="Instagram">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+      </a>
+      <a href="https://x.com" target="_blank" class="social-icon" aria-label="X">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"/></svg>
+      </a>
+      <a href="https://tiktok.com" target="_blank" class="social-icon" aria-label="TikTok">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+      </a>
+      <a href="https://facebook.com" target="_blank" class="social-icon" aria-label="Facebook">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+    <div id="success-modal" class="modal-overlay">
+    <div class="modal">
+        <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+        
+        <div style="text-align: center;">
+            <h2 class="popup-title">Success!</h2>
+            <div style="width:80px; height:80px; border-radius:50%; border:5px solid #22c55e; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;margin-top: 20px; color:#22c55e; font-size:36px;">✓</div>
+            <p class="popup-subtitle">Your profile has been updated.</p>
+            <div style="margin-top: 24px;">
+                <button type="button" class="btn btn-primary btn-lg" onclick="closeModal()" style="width: 100%;">
+                    Great!
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="{{ asset('js/dropdown_login.js')}}"></script>
+<script src="{{ asset('js/edit-profile.js')}}"></script>
+</html>
